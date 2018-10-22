@@ -8,10 +8,13 @@
 
 int main(int argc, char *argv[])
 {
-    BluetoothClient client;
+
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
-
+    BluetoothClient client;
+    // Exposes the QQuickMapboxGL module so we
+    // can do `import QQuickMapboxGL 1.0`.
+   // QMapbox::registerTypes();
 
     QQmlApplicationEngine engine;
 

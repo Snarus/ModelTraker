@@ -1,13 +1,13 @@
-import QtQuick 2.7
-import QtQuick.Window 2.0
-import QtQuick.Controls 2.0
-import QtPositioning 5.3
-import QtLocation 5.6
-import QtQuick.Layouts 1.0
+import QtQuick 2.9
+import QtQuick.Window 2.3
+import QtQuick.Controls 2.4
+import QtPositioning 5.11
+import QtLocation 5.11
+import QtQuick.Layouts 1.3
 
 
 ApplicationWindow {
-    id: applicationWindow1
+    id: applicationWindow
 
     //    Material.theme: Material.Light
     //    Material.primary: Material.BlueGrey
@@ -16,15 +16,15 @@ ApplicationWindow {
     visible: true
     width: 640
     height: 480
-    color: "#0b1f34"
+    //color: "#0b1f34"
     title: qsTr("Model Traker")
-    SwipeView {
+    StackLayout {
         id: swipeView
         anchors.fill: parent
         currentIndex: tabBar.currentIndex
 
         Page {
-            id: page1
+            id: bluetoothDevices
             x: 0
             y: 0
 
@@ -130,20 +130,71 @@ ApplicationWindow {
         }
 
         Page {
+            id:mapPage
+//            Map {
+//                plugin: Plugin { name: "mapboxgl" }
+
+//                center: QtPositioning.coordinate(60.170448, 24.942046) // Helsinki
+//                zoomLevel: 12
+
+//                MapParameter {
+//                    type: "source"
+
+//                    property var name: "routeSource"
+//                    property var sourceType: "geojson"
+//                    property var data: '{ "type": "FeatureCollection", "features": \
+//                        [{ "type": "Feature", "properties": {}, "geometry": { \
+//                        "type": "LineString", "coordinates": [[ 24.934938848018646, \
+//                        60.16830257086771 ], [ 24.943315386772156, 60.16227776476442 ]]}}]}'
+//                }
+
+//                MapParameter {
+//                    type: "layer"
+
+//                    property var name: "route"
+//                    property var layerType: "line"
+//                    property var source: "routeSource"
+
+//                    // Draw under the first road label layer
+//                    // of the mapbox-streets style.
+//                    property var before: "road-label-small"
+//                }
+
+//                MapParameter {
+//                    type: "paint"
+
+//                    property var layer: "route"
+//                    property var lineColor: "blue"
+//                    property var lineWidth: 8.0
+//                }
+
+//                MapParameter {
+//                    type: "layout"
+
+//                    property var layer: "route"
+//                    property var lineJoin: "round"
+//                    property var lineCap: "round"
+//                }
+//            }
             Map {
                 id: mapOfEurope
                 copyrightsVisible: false
                 anchors.centerIn: parent;
                 anchors.fill: parent
                 plugin: Plugin {
-                    name: "mapbox"
-                    locales: "ru_RU"
+                    //name: "mapbox"
+                    //locales: "ru_RU"
                     //name: "here"
-                    //name:"osm"
+                    name:"osm"
+                    PluginParameter {name: "osm.mapping.host";value: "http://osm.tile.openstreetmap.org/"}
+                    PluginParameter { name: "osm.mapping.host"; value: "http://osm.tile.server.address/" }
+                    PluginParameter { name: "osm.mapping.copyright"; value: "All mine" }
+                    PluginParameter { name: "osm.routing.host"; value: "http://osrm.server.address/viaroute" }
+                    PluginParameter { name: "osm.geocoding.host"; value: "http://geocoding.server.address" }
                     //PluginParameter { name: "osm.key"; value: "dmlus6CpNPDJbQQEQ2PdgUkKbKhTz8Hw" }
                     //PluginParameter { name: "osm.secret"; value: "36Hb0MXOhC4hF9jZ" }
-                    PluginParameter { name: "mapbox.access_token"; value: "pk.eyJ1Ijoic25hcnVzIiwiYSI6ImNpczFpNDdkdzAwNm4yc3MyODRiand6YzkifQ.1-PjqVw8fu0Gava8lBHsSQ" }
-                    PluginParameter { name: "mapbox.map_id"; value: "mapbox//styles/mapbox/streets-v9" }
+                    //PluginParameter { name: "mapbox.access_token"; value: "pk.eyJ1Ijoic25hcnVzIiwiYSI6ImNpczFpNDdkdzAwNm4yc3MyODRiand6YzkifQ.1-PjqVw8fu0Gava8lBHsSQ" }
+                    //PluginParameter { name: "mapbox.map_id"; value: "mapbox://styles/snarus/ciugjonpu00jj2ipsbyl445hj" }
                     //PluginParameter { name: "#country_label"; value: "name_ru" }
                     //PluginParameter { name: "osm.token"; value: "pk.eyJ1Ijoic25hcnVzIiwiYSI6ImNpczFpNDdkdzAwNm4yc3MyODRiand6YzkifQ.1-PjqVw8fu0Gava8lBHsSQ" }
                     //PluginParameter { name: "here.app_id"; value: "NHL0mSGzKN9GHrujpztb" }
@@ -151,7 +202,7 @@ ApplicationWindow {
                     //preferred: ["here", "osm"]
                     //required: Plugin.AnyMappingFeatures | Plugin.AnyGeocodingFeatures
                 }
-
+                //activeMapType: mapOfEurope.supportedMapTypes[7]
                 Plane{
                     id:qmlPlane
                     coordinate: plane.position
@@ -173,6 +224,7 @@ ApplicationWindow {
                         qmlPlane.rotationDirection=plane.direction
                         qmlBase.showMessage(coordinate.distanceTo(qmlBase.coordinate))
                         planeAnimation.start()
+                        mapOfEurope.fitViewportToMapItems()
                         //qmlPlane.showSignal()
                     }
                 }
@@ -196,6 +248,7 @@ ApplicationWindow {
                             qmlBase.coordinate=position.coordinate
                             mapOfEurope.center=position.coordinate
                             qmlBase.showMessage(position.coordinate.distanceTo(qmlPlane.coordinate))
+                            mapOfEurope.fitViewportToMapItems()
                             if(position.directionValid){
                                 //mapOfEurope.rotation=position.direction
                                 qmlBase.rotationDirection=position.direction
@@ -208,18 +261,13 @@ ApplicationWindow {
 
             }
         }
+        ProgramPage{
+            id:modelPage
+        }
     }
 
     footer:TabBar {
         id: tabBar
-//        y: 440
-//        height: 40
-//        anchors.right: parent.right
-//        anchors.rightMargin: 0
-//        anchors.left: parent.left
-//        anchors.leftMargin: 0
-//        anchors.bottom: parent.bottom
-//        anchors.bottomMargin: 0
         currentIndex: swipeView.currentIndex
         TabButton {
             text: qsTr("Bluetooth")

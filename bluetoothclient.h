@@ -12,6 +12,7 @@
 
 #include "QtQmlTricksPlugin_SmartDataModels.h"
 #include "QQmlObjectListModel.h"
+#include <QTimer>
 
 class BluetoothClient : public QObject
 {
@@ -19,7 +20,7 @@ class BluetoothClient : public QObject
     Q_PROPERTY(QGeoCoordinate position READ position NOTIFY positionChanged)
     Q_PROPERTY(float direction READ direction NOTIFY directionChanged)
 public:
-    explicit BluetoothClient(QObject *parent = 0);
+    explicit BluetoothClient(QObject *parent = nullptr);
     ~BluetoothClient();
     QGeoCoordinate position() const;
     float direction();
@@ -36,15 +37,18 @@ private slots:
     void readSocket();
     void connected();
     void disconnected();
+    void onError();
+    void on_timer();
 private:
     QBluetoothServiceDiscoveryAgent *m_discoveryAgent;
     QVector<QBluetoothDeviceInfo>discoveredDevices;
     QVector<QBluetoothServiceInfo>discoveredServices;
-    QBluetoothSocket *m_socket=NULL;
+    QBluetoothSocket *m_socket=nullptr;
     QBluetoothAddress localAddress;
     QBluetoothLocalDevice *localDevice;
     QGeoCoordinate coordinate;
     float m_direction;
+    QTimer timer;
 };
 
 #endif // BLUETOOTHCLIENT_H

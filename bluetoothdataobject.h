@@ -15,7 +15,7 @@ class BluetoothDataObject : public QObject
 
 
 public:
-    BluetoothDataObject(QObject *parent = 0,QBluetoothServiceInfo *service=nullptr)
+    BluetoothDataObject(QObject *parent = nullptr,QBluetoothServiceInfo *service=nullptr)
         :QObject(parent)
     {
         if(service)
@@ -23,7 +23,7 @@ public:
         else
             m_name="";
     }
-    BluetoothDataObject(QObject *parent = 0,QBluetoothDeviceInfo *deviceInfo=nullptr)
+    BluetoothDataObject(QObject *parent = nullptr,QBluetoothDeviceInfo *deviceInfo=nullptr)
         :QObject(parent)
     {
         if(deviceInfo){

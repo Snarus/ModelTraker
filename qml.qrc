@@ -5,5 +5,11 @@
         <file>airplane.png</file>
         <file>Base.qml</file>
         <file>arrow.png</file>
+        <file>arrows-1.png</file>
+        <file>arrows.png</file>
+        <file>O5X8J80.jpg</file>
+        <file>ProgramPage.qml</file>
+        <file>ProgramPageForm.ui.qml</file>
+        <file>qtquickcontrols2.conf</file>
     </qresource>
 </RCC>

@@ -25,7 +25,7 @@ MapQuickItem{
                     id: bannerAnimation
                     from: "yellow"
                     to: "red"
-                    duration: 1000
+                    duration: 3000
                 }
 
             }

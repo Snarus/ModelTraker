@@ -13,13 +13,16 @@ BluetoothClient::BluetoothClient(QObject *parent) : QObject(parent)
             this,SLOT(on_deviceDiscovered(QBluetoothDeviceInfo)));
 
     discoveryAgent->start();
+    //connect(&timer,&QTimer::timeout,this,&BluetoothClient::on_timer);
+    //timer.start(1000);
+
 }
 
 BluetoothClient::~BluetoothClient()
 {
     if(m_socket)
         delete m_socket;
-    m_socket=0;
+    m_socket=nullptr;
     delete m_discoveryAgent;
 }
 
@@ -52,10 +55,11 @@ void BluetoothClient::on_deviceDiscovered(QBluetoothDeviceInfo device)
             return;
         m_socket=new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
         qDebug()<<"create socket";
-        m_socket->connectToService(device.address(),device.deviceUuid());
+        connect(m_socket,SIGNAL(error(QBluetoothSocket::SocketError)),this,SLOT(onError()));
         connect(m_socket,SIGNAL(readyRead()),this,SLOT(readSocket()));
         connect(m_socket,SIGNAL(connected()),this,SLOT(connected()));
         connect(m_socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+        m_socket->connectToService(device.address(),device.deviceUuid());
     }
 }
 
@@ -69,10 +73,11 @@ void BluetoothClient::on_serviceDiscovered(QBluetoothServiceInfo service)
             return;
         m_socket=new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
         qDebug()<<"create socket";
-        m_socket->connectToService(service);
+        connect(m_socket,SIGNAL(error()),this,SLOT(onError()));
         connect(m_socket,SIGNAL(readyRead()),this,SLOT(readSocket()));
         connect(m_socket,SIGNAL(connected()),this,SLOT(connected()));
         connect(m_socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+        m_socket->connectToService(service);
     }
 }
 
@@ -86,7 +91,7 @@ void BluetoothClient::readSocket()
     while(m_socket->canReadLine()){
         QByteArray line=m_socket->readLine();
         //qDebug()<<line;
-        //qDebug()<<"received data"<<line;
+        qDebug()<<"received data"<<line;
         QGeoPositionInfo info;
         bool fix;
         BluetoothPositionInfoSource source(QNmeaPositionInfoSource::RealTimeMode);
@@ -109,7 +114,7 @@ void BluetoothClient::readSocket()
             }
         }
     }
-    //emit messageReceived();
+    emit messageReceived();
 }
 
 void BluetoothClient::connected()
@@ -120,4 +125,43 @@ void BluetoothClient::connected()
 void BluetoothClient::disconnected()
 {
     qDebug()<<"disconnected";
+}
+
+void BluetoothClient::onError()
+{
+    if(m_socket!=nullptr)
+        qDebug()<<"error"<<m_socket->errorString();
+    else
+        qDebug()<<"error without socket";
+}
+
+void BluetoothClient::on_timer()
+{
+    const QByteArray line="$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A";
+
+    //QByteArray line=m_socket->readLine();
+    //qDebug()<<line;
+    qDebug()<<"received data"<<line;
+    QGeoPositionInfo info;
+    bool fix;
+    BluetoothPositionInfoSource source(QNmeaPositionInfoSource::RealTimeMode);
+    if(source.parsePosInfoFromNmeaData(line,line.size(),&info,&fix)){
+        if(info.isValid()){
+            qDebug()<<"direction:"<<info.attribute(QGeoPositionInfo::Direction);
+            qDebug()<<"ground speed:"<<info.attribute(QGeoPositionInfo::GroundSpeed);
+            qDebug()<<"vertical speed:"<<info.attribute(QGeoPositionInfo::VerticalSpeed);
+            qDebug()<<"hor accuracy:"<<info.attribute(QGeoPositionInfo::HorizontalAccuracy);
+            qDebug()<<"vert accuracy:"<<info.attribute(QGeoPositionInfo::VerticalAccuracy);
+            if(!qIsNaN(info.attribute(QGeoPositionInfo::Direction))){
+                m_direction=info.attribute(QGeoPositionInfo::Direction);
+                emit directionChanged();
+            }
+            coordinate=info.coordinate();
+            emit positionChanged();
+            qDebug()<<"coords:"<<info.coordinate().toString();
+            //qDebug()<<"hor accuracy:"<<info.attribute(QGeoPositionInfo::HorizontalAccuracy);
+            //qDebug()<<"ver accuracy:"<<info.attribute(QGeoPositionInfo::VerticalAccuracy);
+        }
+    }
+
 }
